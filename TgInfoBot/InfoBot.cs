@@ -62,7 +62,7 @@ namespace TgInfoBot
                 var chatId = upd.Message.Chat.Id;
                 var command = messageText.Substring(1).Split(" ")[0].Trim();
                 Console.WriteLine($"Command: {command}");
-                if (command == "/off" && Enabled)
+                if (command == "off" && Enabled)
                 {
                     Console.WriteLine("Enable");
                     Enabled = false;
@@ -72,7 +72,7 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
-                if (command == "/on" && !Enabled)
+                if (command == "on" && !Enabled)
                 {
                     Console.WriteLine("Disable");
                     Enabled = true;
@@ -82,7 +82,7 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
-                if (command == "/status")
+                if (command == "status")
                 {
                     Console.WriteLine($"Report status {Enabled}");
                     _ = await client.SendTextMessageAsync(
