@@ -59,11 +59,29 @@ namespace TgInfoBot
                 return;
             if (messageText.StartsWith("/"))
             {
+                var chatId = upd.Message.Chat.Id;
                 var command = messageText.Substring(1).Split(" ")[0].Trim();
+                if (command == "/off" && Enabled)
+                {
+                    Enabled = false;
+                    _ = await client.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: "Заткнулся",
+                            cancellationToken: t);
+                    return;
+                }
+                if (command == "/on")
+                {
+                    Enabled = true;
+                    _ = await client.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: "ну ок",
+                            cancellationToken: t);
+                    return;
+                }
                 if (Commands.ContainsKey(command)) {
                     var infoer = Commands[command];
                     var ret = infoer.GetInfoNow();
-                    var chatId = upd.Message.Chat.Id;
                     if (Enabled)
                     {
                         _ = await client.SendTextMessageAsync(
