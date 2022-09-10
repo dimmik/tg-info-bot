@@ -23,6 +23,9 @@ var conf = app.Configuration;
 var commands = conf.AsEnumerable().Where(kv => kv.Key.StartsWith("Command_"))
     .ToDictionary(k => k.Key.Trim()["Command_".Length..].ToLower(), v => new InfoByDate(v.Value));
 
+var tgToken = conf.GetValue("TgToken", "wrong");
+using var tgBot = new InfoBot(tgToken, commands);
+Task tgBotTask = tgBot.Start();
 
 
 var summaries = new[]
