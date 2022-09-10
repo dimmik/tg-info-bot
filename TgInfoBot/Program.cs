@@ -25,6 +25,7 @@ var commands = conf.AsEnumerable().Where(kv => kv.Key.StartsWith("Command_"))
 
 var tgToken = conf.GetValue("TgToken", "wrong");
 bool enabled = conf.GetValue("TgInfoEnabled", false);
+string seccode = conf.GetValue("TgBotSecretCode", "adk");
 using var tgBot = new InfoBot(tgToken, commands, enabled);
 Task tgBotTask = tgBot.Start();
 
@@ -33,6 +34,12 @@ var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
+
+app.MapGet($"/config/{seccode}/enable", () => 
+{
+    tgBot.Enabled = !tgBot.Enabled;
+    return $"tgBotEnabled: {tgBot.Enabled}";
+});
 
 app.MapGet("/weatherforecast", () =>
 {

@@ -12,7 +12,7 @@ namespace TgInfoBot
     {
         private readonly ITelegramBotClient botClient;
         private readonly Dictionary<string, InfoByDate> Commands;
-        private readonly bool Enabled;
+        public bool Enabled { get; set; }
         public InfoBot(string token, Dictionary<string, InfoByDate> commands, bool enabled)
         {
             botClient = new TelegramBotClient(token);
@@ -41,9 +41,10 @@ namespace TgInfoBot
             cts.Cancel();
         }
 
-        private async Task HandlePollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken t)
+        private Task HandlePollingErrorAsync(ITelegramBotClient client, Exception ex, CancellationToken t)
         {
             //throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         private async Task HandleUpdateAsync(ITelegramBotClient client, Update upd, CancellationToken t)
