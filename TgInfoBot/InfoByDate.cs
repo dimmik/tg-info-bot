@@ -31,7 +31,7 @@
             if (NowHappening.Any())
             {
                 var item = NowHappening.First();
-                return $"{(Emotion == Emotion.Bad ? "Печаль," : "Отлично,")} {Description} в процессе, {item.from :dd.MM.yyyy} - {item.to :dd.MM.yyyy}. До конца {(int)((item.to - dateTime).TotalDays)} д.";
+                return $"{(Emotion == Emotion.Bad ? "Печаль," : "Отлично,")} {Description} в процессе, {item.from :dd.MM.yyyy} - {item.to :dd.MM.yyyy}. Осталось {(int)((item.to - dateTime).TotalDays)} д.";
             }
             // find nearest
             var after = dt.Where(d => d.from > dateTime).OrderBy(d => d.from);
