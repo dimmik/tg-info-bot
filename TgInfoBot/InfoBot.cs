@@ -12,16 +12,17 @@ namespace TgInfoBot
     {
         private readonly ITelegramBotClient botClient;
         private readonly Dictionary<string, InfoByDate> Commands;
-        public InfoBot(string token, Dictionary<string, InfoByDate> commands)
+        private readonly bool Enabled;
+        public InfoBot(string token, Dictionary<string, InfoByDate> commands, bool enabled)
         {
             botClient = new TelegramBotClient(token);
             Commands = commands;
+            Enabled = enabled;
         }
 
         private readonly CancellationTokenSource cts = new();
         public async Task Start()
         {
-
             // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
             var receiverOptions = new ReceiverOptions
             {
@@ -62,10 +63,13 @@ namespace TgInfoBot
                     var infoer = Commands[command];
                     var ret = infoer.GetInfoNow();
                     var chatId = upd.Message.Chat.Id;
-                    _ = await client.SendTextMessageAsync(
-                        chatId: chatId,
-                        text: ret,
-                        cancellationToken: t);
+                    if (Enabled)
+                    {
+                        _ = await client.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: ret,
+                            cancellationToken: t);
+                    }
                 }
             }
         }

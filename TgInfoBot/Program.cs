@@ -24,7 +24,8 @@ var commands = conf.AsEnumerable().Where(kv => kv.Key.StartsWith("Command_"))
     .ToDictionary(k => k.Key.Trim()["Command_".Length..].ToLower(), v => new InfoByDate(v.Value));
 
 var tgToken = conf.GetValue("TgToken", "wrong");
-using var tgBot = new InfoBot(tgToken, commands);
+bool enabled = conf.GetValue("TgInfoEnabled", false);
+using var tgBot = new InfoBot(tgToken, commands, enabled);
 Task tgBotTask = tgBot.Start();
 
 
