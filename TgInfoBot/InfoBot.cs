@@ -61,8 +61,10 @@ namespace TgInfoBot
             {
                 var chatId = upd.Message.Chat.Id;
                 var command = messageText.Substring(1).Split(" ")[0].Trim();
+                Console.WriteLine($"Command: {command}");
                 if (command == "/off" && Enabled)
                 {
+                    Console.WriteLine("Enable");
                     Enabled = false;
                     _ = await client.SendTextMessageAsync(
                             chatId: chatId,
@@ -70,8 +72,9 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
-                if (command == "/on")
+                if (command == "/on" && !Enabled)
                 {
+                    Console.WriteLine("Disable");
                     Enabled = true;
                     _ = await client.SendTextMessageAsync(
                             chatId: chatId,
@@ -81,6 +84,7 @@ namespace TgInfoBot
                 }
                 if (command == "/status")
                 {
+                    Console.WriteLine($"Report status {Enabled}");
                     _ = await client.SendTextMessageAsync(
                             chatId: chatId,
                             text: $"{(Enabled ? "дада" : "сплю")}",
@@ -88,6 +92,7 @@ namespace TgInfoBot
                     return;
                 }
                 if (Commands.ContainsKey(command)) {
+                    Console.WriteLine("Write an info");
                     var infoer = Commands[command];
                     var ret = infoer.GetInfoNow();
                     if (Enabled)
