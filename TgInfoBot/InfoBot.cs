@@ -79,6 +79,14 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
+                if (command == "/status")
+                {
+                    _ = await client.SendTextMessageAsync(
+                            chatId: chatId,
+                            text: $"{(Enabled ? "дада" : "сплю")}",
+                            cancellationToken: t);
+                    return;
+                }
                 if (Commands.ContainsKey(command)) {
                     var infoer = Commands[command];
                     var ret = infoer.GetInfoNow();

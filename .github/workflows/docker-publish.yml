@@ -1,4 +1,4 @@
-name: BETA Build -- Create and publish a Docker image
+name: TgBot -- Create and publish a Docker image
 concurrency: 
   group: tg-info-bot
   cancel-in-progress: true
