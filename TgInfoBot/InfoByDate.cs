@@ -19,7 +19,7 @@
                     TimeSpan.Parse(infoParts[4]));
             Dates = dates.Split(';').Where(d => !string.IsNullOrWhiteSpace(d))
                         .Select(ft => ft.Split(':'))
-                        .Select(ft => (DateTimeOffset.ParseExact(ft[0], "yyyy-MM-dd", null), DateTimeOffset.ParseExact(ft[1], "yyyy-MM-dd", null).AddHours(24)))
+                        .Select(ft => (DateTimeOffset.ParseExact(ft[0], "yyyy-MM-dd", null), DateTimeOffset.ParseExact(ft[1], "yyyy-MM-dd", null).AddHours(23).AddMinutes(59).AddSeconds(59)))
                         .ToArray()
                         ;
         }
