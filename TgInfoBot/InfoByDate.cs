@@ -19,7 +19,7 @@
                     TimeSpan.Parse(infoParts[4]));
             Dates = dates.Split(';').Where(d => !string.IsNullOrWhiteSpace(d))
                         .Select(ft => ft.Split(':'))
-                        .Select(ft => (DateTimeOffset.ParseExact(ft[0], "yyyy-MM-dd", null), DateTimeOffset.ParseExact(ft[1], "yyyy-MM-dd", null)))
+                        .Select(ft => (DateTimeOffset.ParseExact(ft[0], "yyyy-MM-dd", null), DateTimeOffset.ParseExact(ft[1], "yyyy-MM-dd", null).AddHours(24)))
                         .ToArray()
                         ;
         }
@@ -31,7 +31,7 @@
             if (NowHappening.Any())
             {
                 var item = NowHappening.First();
-                return $"{(Emotion == Emotion.Bad ? "Печаль," : "Отлично,")} {Description} в процессе, {item.from :dd.MM.yyyy} - {item.to :dd.MM.yyyy}. Осталось {(int)((item.to - dateTime).TotalDays)} д.";
+                return $"{(Emotion == Emotion.Bad ? "Печаль," : "Отлично,")} {Description} в процессе, {item.from :dd.MM.yyyy} - {item.to :dd.MM.yyyy}. Осталось {((item.to - dateTime).TotalDays) :##.##} д. ({((item.to - dateTime).TotalHours):##.##} ч.)";
             }
             // find nearest
             var after = dt.Where(d => d.from > dateTime).OrderBy(d => d.from);
