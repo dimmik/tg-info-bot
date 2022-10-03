@@ -40,12 +40,12 @@
             if (after.Any())
             {
                 var item = after.First();
-                res += $"До следующего {DescriptionFromTo} осталось {(int)((item.from - dateTime).TotalDays)} д. ";
+                res += $"До следующего {DescriptionFromTo} осталось {((item.from - dateTime).TotalDays):0.##} д. ";
             } 
             if (before.Any()) 
             {
                 var item = before.First();
-                res += $"С предыдущего {DescriptionFromTo} прошло {-(int)((item.from - dateTime).TotalDays)} д. ";
+                res += $"С предыдущего {DescriptionFromTo} прошло {(-((item.to - dateTime).TotalDays)):0:##} д. ";
             }
             return res;
         }
