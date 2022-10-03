@@ -45,7 +45,7 @@
             if (before.Any()) 
             {
                 var item = before.First();
-                res += $"С предыдущего {DescriptionFromTo} прошло {(-((item.to - dateTime).TotalDays)):0:##} д. ";
+                res += $"С предыдущего {DescriptionFromTo} прошло {((dateTime - item.to).TotalDays):0:##} д. ({dateTime}, {item.to})";
             }
             return res;
         }
