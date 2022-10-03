@@ -40,7 +40,8 @@
             if (after.Any())
             {
                 var item = after.First();
-                res += $"До следующего {DescriptionFromTo} осталось {((item.from - dateTime).TotalDays):0.##} д. ";
+                res += $"До следующего {DescriptionFromTo} осталось {((item.from - dateTime).TotalDays):0.##} д. " +
+                    $"({item.from:dd.MM.yyyy} - {item.to:dd.MM.yyyy}); ";
             } 
             if (before.Any()) 
             {
