@@ -57,7 +57,7 @@ namespace TgInfoBot
                 return;
             if (messageText == null)
                 return;
-            if (messageText.StartsWith("/"))
+            if (messageText.StartsWith("/") || Commands.Values.Any(c => c.Accept(messageText)))
             {
                 var chatId = upd.Message.Chat.Id;
                 var command = messageText.Substring(1).Split(" ")[0].Trim();
@@ -91,18 +91,34 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
-                if (Commands.ContainsKey(command)) {
-                    Console.WriteLine("Write an info");
+                if (Commands.ContainsKey(command))
+                {
                     var infoer = Commands[command];
-                    var ret = infoer.GetInfoNow();
-                    if (Enabled)
+                    if (infoer != null)
                     {
-                        _ = await client.SendTextMessageAsync(
-                            chatId: chatId,
-                            text: ret,
-                            cancellationToken: t);
+                        await WriteInfo(client, chatId, infoer, t);
+                        return;
                     }
                 }
+                if (Commands.Values.Any(c => c.Accept(messageText)))
+                {
+                    var infoer = Commands.Values.First(c => c.Accept(messageText));
+                    await WriteInfo(client, chatId, infoer, t);
+                    return;
+                }
+            }
+        }
+
+        private async Task WriteInfo(ITelegramBotClient client, long chatId, InfoByDate infoer, CancellationToken t)
+        {
+            Console.WriteLine("Write an info");
+            var ret = infoer.GetInfoNow();
+            if (Enabled)
+            {
+                _ = await client.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: ret,
+                    cancellationToken: t);
             }
         }
 

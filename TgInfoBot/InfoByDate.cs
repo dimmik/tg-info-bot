@@ -1,18 +1,21 @@
 ﻿namespace TgInfoBot
 {
-    public class InfoByDate
+    public class InfoByDate : IMessageProcessor
     {
         private readonly IEnumerable<(DateTimeOffset from, DateTimeOffset to)> Dates;
+        private readonly IEnumerable<string> Keywords;
         private readonly string Description;
         private readonly string DescriptionFromTo;
         private readonly Emotion Emotion;
         public TimeSpan AlertTimeBefore { get; private set; }
         public InfoByDate(string infoStr)
         {
-            // [rm:Ретроградный Меркурий:Ретроградного Меркурия:Bad:3],2022-09-10:2022-10-02;2022-12-29:2023-01-18;
+            // [rm,keyword1,keyword2:Ретроградный Меркурий:Ретроградного Меркурия:Bad:3],2022-09-10:2022-10-02;2022-12-29:2023-01-18;
             var strParts = infoStr.Split(',');
             var (info, dates) = (strParts[0], strParts[1]);
             var infoParts = info.Trim(' ', '[', ']').Split(':');
+            var cmd = infoParts[0];
+            Keywords = cmd.Split('#').Skip(1);
             (Description, DescriptionFromTo, Emotion, AlertTimeBefore) 
                 = (infoParts[1], infoParts[2],
                     infoParts[3].ToLower() == "bad" ? Emotion.Bad : Emotion.Good, 
@@ -51,6 +54,11 @@
             return res;
         }
         public string GetInfoNow() => GetInfo(DateTimeOffset.Now);
+
+        public bool Accept(string s)
+        {
+            return Keywords.Any(k => s.ToLower().Contains(k.ToLower()));
+        }
     }
     public enum Emotion
     {
