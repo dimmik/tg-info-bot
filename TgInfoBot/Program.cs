@@ -55,7 +55,8 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-app.Run();
+await Task.Delay(-1);
+//app.Run();
 
 internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
 {
