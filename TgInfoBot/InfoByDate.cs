@@ -11,7 +11,7 @@
         public InfoByDate(string infoStr)
         {
             // [rm,keyword1,keyword2:Ретроградный Меркурий:Ретроградного Меркурия:Bad:3],2022-09-10:2022-10-02;2022-12-29:2023-01-18;
-            var strParts = infoStr.Split(',');
+            var strParts = infoStr.Trim(' ', '"', '\'').Split(',');
             var (info, dates) = (strParts[0], strParts[1]);
             var infoParts = info.Trim(' ', '[', ']').Split(':');
             var cmd = infoParts[0];
