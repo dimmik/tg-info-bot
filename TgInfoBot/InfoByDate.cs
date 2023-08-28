@@ -28,13 +28,15 @@
         }
         public string GetInfo(DateTimeOffset dateTime)
         {
-            var dt = (Dates ?? Enumerable.Empty<(DateTimeOffset from, DateTimeOffset to)>());
+            var dt = Dates ?? Enumerable.Empty<(DateTimeOffset from, DateTimeOffset to)>();
             var NowHappening = dt
                 .Where(ft => ft.from <= dateTime && ft.to >= dateTime);
             if (NowHappening.Any())
             {
                 var item = NowHappening.First();
-                return $"{(Emotion == Emotion.Bad ? "Печаль," : "Отлично,")} {Description} в процессе, {item.from :dd.MM.yyyy} - {item.to :dd.MM.yyyy}. Осталось {((item.to - dateTime).TotalDays) :0.##} д. ({((item.to - dateTime).TotalHours):0.##} ч.) [{DateTime.Now:yyyy.MM.dd HH:mm:ss}]";
+                return $"{(Emotion == Emotion.Bad ? "Печаль," : "Отлично,")} {Description} в процессе, {item.from :dd.MM.yyyy} - " +
+                $"{item.to :dd.MM.yyyy}. Осталось {((item.to - dateTime).TotalDays) :0.##} д. ({((item.to - dateTime).TotalHours):0.##} ч.) "+
+                $"[сейчас у меня {DateTimeOffset.Now:yyyy.MM.dd HH:mm:sszzz}]";
             }
             // find nearest
             var after = dt.Where(d => d.from > dateTime).OrderBy(d => d.from);
@@ -51,6 +53,7 @@
                 var item = before.First();
                 res += $"С предыдущего {DescriptionFromTo} прошло {((dateTime - item.to).TotalDays):0.##} д.";
             }
+            res += $"[сейчас у меня {DateTime.Now:yyyy.MM.dd HH:mm:sszzz}]";
             return res;
         }
         public string GetInfoNow() => GetInfo(DateTimeOffset.Now);
