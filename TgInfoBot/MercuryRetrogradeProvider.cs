@@ -77,7 +77,8 @@ namespace TgInfoBot
                 else if (delta >= 0 && inRetro)
                 {
                     inRetro = false;
-                    var endDate = rows[i].date;
+                    // End on the last retrograde day, not on the first direct day.
+                    var endDate = rows[i - 1].date;
                     ranges.Add((
                         new DateTimeOffset(retroStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
                         // Include the full end day (23:59:59)

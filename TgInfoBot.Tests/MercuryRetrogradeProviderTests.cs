@@ -42,7 +42,7 @@ public class MercuryRetrogradeProviderTests
             Row(2024, 1, 3, 102.0), // prograde; retrograde starts here (prev = this day)
             Row(2024, 1, 4, 101.5), // delta < 0  -> inRetro=true, retroStart = 2024-01-03
             Row(2024, 1, 5, 101.0), // retrograde
-            Row(2024, 1, 6, 101.8), // delta >= 0 -> period ends, endDate = 2024-01-06
+            Row(2024, 1, 6, 101.8), // delta >= 0 -> period ends, endDate = 2024-01-05
             Row(2024, 1, 7, 102.5),
         };
 
@@ -50,7 +50,7 @@ public class MercuryRetrogradeProviderTests
 
         Assert.Single(result);
         Assert.Equal(new DateOnly(2024, 1, 3), From(result[0].from));
-        Assert.Equal(new DateOnly(2024, 1, 6), From(result[0].to));
+        Assert.Equal(new DateOnly(2024, 1, 5), From(result[0].to));
     }
 
     [Fact]
@@ -61,19 +61,19 @@ public class MercuryRetrogradeProviderTests
             Row(2024, 1,  1, 100.0),
             Row(2024, 1,  2, 101.0),
             Row(2024, 1,  3, 100.5), // retro 1 starts (retroStart = Jan 2)
-            Row(2024, 1,  4, 101.2), // retro 1 ends at Jan 4
+            Row(2024, 1,  4, 101.2), // retro 1 ends at Jan 3
             Row(2024, 1,  5, 102.0),
             Row(2024, 1,  6, 101.8), // retro 2 starts (retroStart = Jan 5)
-            Row(2024, 1,  7, 102.5), // retro 2 ends at Jan 7
+            Row(2024, 1,  7, 102.5), // retro 2 ends at Jan 6
         };
 
         var result = MercuryRetrogradeProvider.ComputeRetrogradeRanges(rows);
 
         Assert.Equal(2, result.Length);
         Assert.Equal(new DateOnly(2024, 1, 2), From(result[0].from));
-        Assert.Equal(new DateOnly(2024, 1, 4), From(result[0].to));
+        Assert.Equal(new DateOnly(2024, 1, 3), From(result[0].to));
         Assert.Equal(new DateOnly(2024, 1, 5), From(result[1].from));
-        Assert.Equal(new DateOnly(2024, 1, 7), From(result[1].to));
+        Assert.Equal(new DateOnly(2024, 1, 6), From(result[1].to));
     }
 
     [Fact]
