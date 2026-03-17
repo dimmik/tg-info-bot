@@ -75,7 +75,14 @@ namespace TgInfoBot
             if (!string.IsNullOrEmpty(command))
             {
                 _logger.LogInformation("Command: {Command}", command);
-                if (command == "off" && Enabled)
+
+                // When bot is disabled, allow only /on and ignore everything else.
+                if (!Enabled && !string.Equals(command, "on", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                if (string.Equals(command, "off", StringComparison.OrdinalIgnoreCase) && Enabled)
                 {
                     Enabled = false;
                     _ = await client.SendTextMessageAsync(
@@ -84,7 +91,7 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
-                if (command == "on" && !Enabled)
+                if (string.Equals(command, "on", StringComparison.OrdinalIgnoreCase) && !Enabled)
                 {
                     Enabled = true;
                     _ = await client.SendTextMessageAsync(
@@ -93,7 +100,7 @@ namespace TgInfoBot
                             cancellationToken: t);
                     return;
                 }
-                if (command == "status")
+                if (string.Equals(command, "status", StringComparison.OrdinalIgnoreCase))
                 {
                     _ = await client.SendTextMessageAsync(
                             chatId: chatId,
@@ -136,7 +143,14 @@ namespace TgInfoBot
             }
 
             var command = payload.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0].Trim();
-            return command.Length == 0 ? null : command;
+            if (command.Length == 0)
+            {
+                return null;
+            }
+
+            // Telegram may send commands as /command@botname in groups.
+            var atPos = command.IndexOf('@', StringComparison.Ordinal);
+            return atPos > 0 ? command[..atPos] : command;
         }
 
         private InfoByDate? TryMatchInfoProcessor(string messageText)
