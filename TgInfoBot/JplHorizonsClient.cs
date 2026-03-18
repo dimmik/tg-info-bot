@@ -10,14 +10,12 @@ namespace TgInfoBot
     public sealed class JplHorizonsClient
     {
         private readonly HttpClient _http;
-        private const string BaseUrl = "https://ssd.jpl.nasa.gov/api/horizons.api";
+        private readonly JplHorizonsOptions _options;
 
-        // Mercury major body ID.
-        private const string MercuryId = "199";
-
-        public JplHorizonsClient(HttpClient http)
+        public JplHorizonsClient(HttpClient http, JplHorizonsOptions options)
         {
             _http = http;
+            _options = options;
         }
 
         /// <summary>
@@ -30,16 +28,16 @@ namespace TgInfoBot
             var startTime = new DateOnly(yearFrom, 1, 1).ToString("yyyy-MM-dd");
             var stopTime  = new DateOnly(yearTo, 12, 31).ToString("yyyy-MM-dd");
 
-            var url = $"{BaseUrl}?format=json" +
-                $"&COMMAND='{MercuryId}'" +
+            var url = $"{_options.BaseUrl}?format=json" +
+                $"&COMMAND='{_options.MercuryId}'" +
                 $"&EPHEM_TYPE=OBSERVER" +
                 $"&CENTER='500@399'" +     // geocentric
                 $"&START_TIME='{startTime}'" +
                 $"&STOP_TIME='{stopTime}'" +
-                $"&STEP_SIZE='1d'" +
-                $"&QUANTITIES='31'" +      // ecliptic longitude
-                $"&CSV_FORMAT=YES" +
-                $"&OBJ_DATA=NO";
+                $"&STEP_SIZE='{_options.StepSize}'" +
+                $"&QUANTITIES='{_options.Quantities}'" +
+                $"&CSV_FORMAT={_options.CsvFormat}" +
+                $"&OBJ_DATA={_options.ObjData}";
 
             using var response = await _http.GetAsync(url, ct);
             response.EnsureSuccessStatusCode();

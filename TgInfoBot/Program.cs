@@ -73,6 +73,16 @@ foreach (var entry in commandEntries)
 
 string seccode = conf.GetValue<string>("TgBotSecretCode") ?? "adk";
 
+// Configure JPL Horizons API options
+var jplOptions = new JplHorizonsOptions();
+conf.GetSection("JplHorizons").Bind(jplOptions);
+builder.Services.AddSingleton(jplOptions);
+
+// Configure Mercury retrograde refresh options
+var refreshOptions = new MercuryRetrogradeRefreshOptions();
+conf.GetSection("MercuryRetrogradeRefresh").Bind(refreshOptions);
+builder.Services.AddSingleton(refreshOptions);
+
 builder.Services.AddHttpClient<JplHorizonsClient>();
 builder.Services.AddSingleton<MercuryRetrogradeProvider>();
 builder.Services.AddHostedService<MercuryRetrogradeDateRefreshService>();

@@ -8,16 +8,16 @@ namespace TgInfoBot
     {
         private readonly MercuryRetrogradeProvider _provider;
         private readonly ILogger<MercuryRetrogradeDateRefreshService> _logger;
-
-        private static readonly TimeSpan RefreshInterval  = TimeSpan.FromHours(24);
-        private static readonly TimeSpan RetryInterval    = TimeSpan.FromMinutes(30);
+        private readonly MercuryRetrogradeRefreshOptions _options;
 
         public MercuryRetrogradeDateRefreshService(
             MercuryRetrogradeProvider provider,
-            ILogger<MercuryRetrogradeDateRefreshService> logger)
+            ILogger<MercuryRetrogradeDateRefreshService> logger,
+            MercuryRetrogradeRefreshOptions options)
         {
             _provider = provider;
             _logger = logger;
+            _options = options;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,7 +27,7 @@ namespace TgInfoBot
                 try
                 {
                     await _provider.RefreshAsync(stoppingToken);
-                    await Task.Delay(RefreshInterval, stoppingToken);
+                    await Task.Delay(_options.RefreshInterval, stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -35,8 +35,8 @@ namespace TgInfoBot
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to refresh Mercury retrograde data from JPL. Retrying in {Retry} min.", RetryInterval.TotalMinutes);
-                    await Task.Delay(RetryInterval, stoppingToken);
+                    _logger.LogError(ex, "Failed to refresh Mercury retrograde data from JPL. Retrying in {Retry} min.", _options.RetryInterval.TotalMinutes);
+                    await Task.Delay(_options.RetryInterval, stoppingToken);
                 }
             }
         }

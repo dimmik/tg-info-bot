@@ -9,7 +9,7 @@
         /// Optional live date provider (e.g. JPL Horizons). When set, its ranges are
         /// used in <see cref="GetInfo"/> instead of the static config dates.
         /// </summary>
-        public IMercuryRetrogradeProvider? LiveProvider { get; set; }
+        public ILiveProvider? LiveProvider { get; set; }
         private readonly string Description;
         private readonly string DescriptionFromTo;
         private readonly Emotion Emotion;

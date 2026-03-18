@@ -1,9 +1,9 @@
 namespace TgInfoBot
 {
-    public interface IMercuryRetrogradeProvider
+    /// <summary>
+    /// Provides Mercury retrograde date ranges, inheriting from the generic live provider interface.
+    /// </summary>
+    public interface IMercuryRetrogradeProvider : ILiveProvider
     {
-        (DateTimeOffset from, DateTimeOffset to)[] Ranges { get; }
-        DateTimeOffset LastUpdated { get; }
-        bool HasData { get; }
     }
 }
