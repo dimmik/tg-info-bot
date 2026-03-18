@@ -24,6 +24,8 @@ Never commit a real token to version control.
 | `TgBotSecretCode` | `adk` | Secret path segment for the HTTP enable/disable endpoint. |
 | `LiveDataCommands` | `""` | Comma-separated list of command names that should use live JPL data (e.g. `RM`). Empty disables live fetching. |
 | `Command_<NAME>` | _(none)_ | One or more command definitions (see format below). At least one is required. `<NAME>` should not contain `_`. |
+| `JplHorizons:*` | see `appsettings*.json` | JPL Horizons request parameters (`BaseUrl`, `MercuryId`, `StepSize`, `Quantities`, `CsvFormat`, `ObjData`). |
+| `MercuryRetrogradeRefresh:*` | see `appsettings*.json` | Background refresh intervals (`RefreshInterval`, `RetryInterval`). |
 
 ### Setting the token with User Secrets (recommended for local development)
 
@@ -59,6 +61,30 @@ Example:
 
 ```json
 "Command_RM": "[rm#меркур#ретрогр:Ретроградный Меркурий:Ретроградного Меркурия:Bad:3],2025-03-15:2025-04-07;"
+```
+
+### Ready-to-use development config (replace only `TgToken`)
+
+```json
+{
+  "TgInfoEnabled": true,
+  "TgBotSecretCode": "change-me",
+  "LiveDataCommands": "RM",
+  "Command_RM": "[rm#меркур#ретрогр:Ретроградный Меркурий:Ретроградного Меркурия:Bad:3],2022-08-01:2022-08-15;2022-09-10:2022-10-02;2022-12-29:2023-01-18;2023-04-21:2023-05-15;2023-08-23:2023-09-15;2023-12-13:2024-01-02;2024-04-01:2024-04-25;2024-08-05:2024-08-28;2024-11-26:2024-12-15;2025-03-14:2025-04-07;2025-07-17:2025-08-11;2025-11-10:2025-11-29;2026-02-25:2026-03-20;2026-06-29:2026-07-23;2026-11-13:2026-11-24;2027-02-09:2027-03-03;2027-06-10:2027-07-04;2027-10-07:2027-10-28;",
+  "TgToken": "xxx",
+  "JplHorizons": {
+    "BaseUrl": "https://ssd.jpl.nasa.gov/api/horizons.api",
+    "MercuryId": "199",
+    "StepSize": "1d",
+    "Quantities": "31",
+    "CsvFormat": "YES",
+    "ObjData": "NO"
+  },
+  "MercuryRetrogradeRefresh": {
+    "RefreshInterval": "1.00:00:00",
+    "RetryInterval": "00:30:00"
+  }
+}
 ```
 
 ## Live data from NASA/JPL Horizons
