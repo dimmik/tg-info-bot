@@ -42,6 +42,7 @@ var commandEntries = conf.AsEnumerable()
         var suffix = kv.Key.Length > "Command_".Length
             ? kv.Key.Substring("Command_".Length)
             : string.Empty;
+        Console.WriteLine($"suffix: {suffix}");
 
         if (suffix.Contains("_", StringComparison.Ordinal))
         {
