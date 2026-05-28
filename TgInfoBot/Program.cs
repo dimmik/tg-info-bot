@@ -28,6 +28,7 @@ if (string.IsNullOrWhiteSpace(tgToken) || string.Equals(tgToken, "wrong", String
 var commandEntries = conf.AsEnumerable()
     .Where(kv =>
     {
+        Console.WriteLine($"config: {kv.Key} = {kv.Value}");
         if (!kv.Key.StartsWith("Command_", StringComparison.OrdinalIgnoreCase))
         {
             return false;
