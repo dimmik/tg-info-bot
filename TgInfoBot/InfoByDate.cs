@@ -57,7 +57,7 @@
 
         public string GetInfo(DateTimeOffset dateTime)
         {
-            Console.WriteLine($"lp: {LiveProvider} hasdata: {LiveProvider?.HasData}");
+            //Console.WriteLine($"lp: {LiveProvider} hasdata: {LiveProvider?.HasData}");
             var activeDates = (LiveProvider is { HasData: true })
                 ? LiveProvider.Ranges
                 : Dates;
