@@ -1,5 +1,14 @@
+using System.Collections;
 using System.Collections.ObjectModel;
 using TgInfoBot;
+
+
+IDictionary variables = Environment.GetEnvironmentVariables();
+
+foreach (DictionaryEntry entry in variables)
+{
+    Console.WriteLine($"{entry.Key} = {entry.Value}");
+}
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
