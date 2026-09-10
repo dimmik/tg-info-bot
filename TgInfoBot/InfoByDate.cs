@@ -1,9 +1,24 @@
-﻿namespace TgInfoBot
+﻿using System.Text;
+
+namespace TgInfoBot
 {
     public class InfoByDate : IMessageProcessor
     {
         private (DateTimeOffset from, DateTimeOffset to)[] Dates;
         private readonly string[] Keywords;
+        // Keywords after normalization, precomputed once for matching in Accept.
+        private readonly string[] NormalizedKeywords;
+
+        // Latin (and a couple of Greek) look-alikes mapped to their Cyrillic
+        // counterparts, so obfuscation like "mеркурий" (Latin 'm') still matches.
+        // Applied after lower-casing, so only lower-case keys are needed.
+        private static readonly IReadOnlyDictionary<char, char> Homoglyphs = new Dictionary<char, char>
+        {
+            ['a'] = 'а', ['b'] = 'в', ['c'] = 'с', ['e'] = 'е', ['h'] = 'н',
+            ['k'] = 'к', ['m'] = 'м', ['o'] = 'о', ['p'] = 'р', ['t'] = 'т',
+            ['x'] = 'х', ['y'] = 'у',
+            ['ё'] = 'е',
+        };
 
         /// <summary>
         /// Optional live date provider (e.g. JPL Horizons). When set, its ranges are
@@ -38,6 +53,11 @@
             Keywords = cmd
                 .Split('#', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Skip(1)
+                .ToArray();
+
+            NormalizedKeywords = Keywords
+                .Select(Normalize)
+                .Where(k => k.Length > 0)
                 .ToArray();
 
             Description = infoParts[1];
@@ -113,15 +133,58 @@
 
         public bool Accept(string s)
         {
-            foreach (var keyword in Keywords)
+            if (NormalizedKeywords.Length == 0 || string.IsNullOrWhiteSpace(s))
             {
-                if (!string.IsNullOrWhiteSpace(keyword) && s.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                return false;
+            }
+
+            var normalized = Normalize(s);
+            if (normalized.Length == 0)
+            {
+                return false;
+            }
+
+            foreach (var keyword in NormalizedKeywords)
+            {
+                if (normalized.Contains(keyword, StringComparison.Ordinal))
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Normalizes text for keyword matching so that obfuscated mentions still
+        /// match: lower-cases, maps look-alike Latin letters to Cyrillic, and strips
+        /// everything that is not a letter or digit. The stripping collapses
+        /// "spaced-out" (м е р к у р и й) and dotted (м.е.р.к.у.р.и.й) writing into a
+        /// solid run, so a stem keyword like "меркури" matches any declension too.
+        /// </summary>
+        private static string Normalize(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder(s.Length);
+            foreach (var ch in s)
+            {
+                var lower = char.ToLowerInvariant(ch);
+                if (Homoglyphs.TryGetValue(lower, out var mapped))
+                {
+                    lower = mapped;
+                }
+
+                if (char.IsLetterOrDigit(lower))
+                {
+                    sb.Append(lower);
+                }
+            }
+
+            return sb.ToString();
         }
 
         private static IEnumerable<(DateTimeOffset from, DateTimeOffset to)> ParseDateRanges(string dates)

@@ -100,6 +100,41 @@ public class InfoByDateTests
         Assert.False(sut.Accept(""));
     }
 
+    // --- Accept: normalization / obfuscation resistance ---
+
+    // Config with a Russian *stem* keyword "меркури" so any declension matches.
+    private const string RuConfig =
+        "[cmd#меркури:Меркурий ретроградный:ретроградного Меркурия:Bad:3]," +
+        "2024-01-01:2024-01-31;";
+
+    [Theory]
+    [InlineData("меркурий сегодня ретроградный")]      // nominative
+    [InlineData("может и правда дело в меркурии?")]     // prepositional case — original miss
+    [InlineData("может и правда дело в м е р к у р и и?")] // spaced-out letters
+    [InlineData("это всё м.е.р.к.у.р.и.й виноват")]       // dotted obfuscation
+    [InlineData("МеРкУрИй ретроградит")]                  // mixed case
+    [InlineData("опять ёлки и мёркурий")]                 // ё handled via homoglyph map
+    public void Accept_ObfuscatedRussianMention_ReturnsTrue(string message)
+    {
+        var sut = new InfoByDate(RuConfig);
+        Assert.True(sut.Accept(message));
+    }
+
+    [Fact]
+    public void Accept_LatinHomoglyphMention_ReturnsTrue()
+    {
+        // "mеркурий" — Latin 'm' + Cyrillic tail, a classic homoglyph trick.
+        var sut = new InfoByDate(RuConfig);
+        Assert.True(sut.Accept("опять этот mеркурий"));
+    }
+
+    [Fact]
+    public void Accept_UnrelatedRussianText_ReturnsFalse()
+    {
+        var sut = new InfoByDate(RuConfig);
+        Assert.False(sut.Accept("сегодня отличная погода, идём в кино"));
+    }
+
     // --- GetInfo: active retrograde ---
 
     [Fact]
