@@ -18,5 +18,10 @@ RUN dotnet publish "TgInfoBot.csproj" -c Release -o /app/publish /p:UseAppHost=f
 
 FROM base AS final
 WORKDIR /app
+# Lets `podman auto-update` track this container against the registry tag.
+# Podman copies image labels onto the container at create time, so a container
+# started from a fully-qualified ref (ghcr.io/dimmik/tg-info-bot:latest) inside a
+# systemd unit becomes auto-update-eligible without extra flags.
+LABEL io.containers.autoupdate=registry
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "TgInfoBot.dll"]

@@ -122,7 +122,11 @@ docker run -e TgToken=your-token-here -e TgInfoEnabled=true -e LiveDataCommands=
 
 - `.github/workflows/tests.yml` runs restore/build/tests on push to `master` and on every pull request.
 - `.github/workflows/docker-publish.yml` builds and publishes a multi-platform image (`linux/amd64`, `linux/arm64`) to `ghcr.io/<owner>/<repo>` on push to `master`.
-- Docker tags include `latest` (default branch), `sha-*`, and branch-based tags.
+- Docker tags include `latest` (default branch), a UTC build timestamp
+  (`YYYYMMDD-HHmmss`), `sha-*`, and branch-based tags.
+- The image carries `io.containers.autoupdate=registry`, so `podman auto-update`
+  can track it. The container must still be run from the fully-qualified reference
+  `ghcr.io/<owner>/<repo>:latest` inside a systemd unit for auto-update to pick it up.
 
 ## HTTP management endpoint
 
