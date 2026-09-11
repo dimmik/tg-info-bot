@@ -1,0 +1,36 @@
+# Normalize all text files to LF in the repository.
+# Without this, editing on Windows rewrites whole files as CRLF and every
+# file shows up as modified in `git status`.
+* text=auto eol=lf
+
+# Windows tooling expects CRLF in these.
+*.sln  text eol=crlf
+*.cmd  text eol=crlf
+*.bat  text eol=crlf
+*.ps1  text eol=crlf
+
+# Explicit text types (also gives GitHub better diffs).
+*.cs        text diff=csharp
+*.csproj    text
+*.props     text
+*.targets   text
+*.json      text
+*.yml       text
+*.yaml      text
+*.md        text diff=markdown
+Dockerfile  text
+*.dockerignore text
+.gitignore  text
+
+# Never touch these.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.gz   binary
+*.dll  binary
+*.exe  binary
+*.snk  binary
