@@ -47,6 +47,9 @@ namespace TgInfoBot.Ml
         private DataViewSchema? _inputSchema;
         private PredictionEngine<Sample, Prediction>? _engine;
 
+        // PredictionEngine is not thread-safe; bot updates may arrive concurrently.
+        private readonly object _predictLock = new();
+
         /// <param name="seed">Fixed seed keeps training deterministic (handy for tests).</param>
         public MercuryClassifier(int? seed = 1)
         {
@@ -88,7 +91,10 @@ namespace TgInfoBot.Ml
                 throw new InvalidOperationException("Classifier is not trained. Call Train() or Load() first.");
             }
 
-            return _engine.Predict(new Sample { Text = Normalize(text ?? string.Empty) });
+            lock (_predictLock)
+            {
+                return _engine.Predict(new Sample { Text = Normalize(text ?? string.Empty) });
+            }
         }
 
         /// <summary>True when the message is classified as Mercury-related above the threshold.</summary>

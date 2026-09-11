@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
+using TgInfoBot;
 using TgInfoBot.Ml;
 using Xunit;
 
@@ -89,5 +92,103 @@ public class MercuryClassifierTests : IClassFixture<TrainedMercuryClassifierFixt
                 File.Delete(path);
             }
         }
+    }
+}
+
+public class MercuryDatasetTests
+{
+    [Fact]
+    public void LoadTsv_ParsesLabelsAndSkipsCommentsAndBlanks()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"ds-{Guid.NewGuid():N}.tsv");
+        File.WriteAllText(path,
+            "# comment\n" +
+            "\n" +
+            "1\tмеркурий ретроградит\n" +
+            "true\tопять планета пятится\n" +
+            "0\tво сколько обед\n" +
+            "no\tкупил ноутбук\n");
+        try
+        {
+            var samples = MercuryDataset.LoadTsv(path);
+            Assert.Equal(4, samples.Count);
+            Assert.Equal(2, samples.Count(s => s.Label));
+            Assert.Equal(2, samples.Count(s => !s.Label));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void LoadTsv_InvalidLabel_Throws()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"ds-{Guid.NewGuid():N}.tsv");
+        File.WriteAllText(path, "maybe\tсомнительно\n");
+        try
+        {
+            Assert.Throws<FormatException>(() => MercuryDataset.LoadTsv(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+}
+
+public class ClassifierMatcherTests
+{
+    private static IConfiguration Config(params (string key, string value)[] pairs) =>
+        new ConfigurationBuilder()
+            .AddInMemoryCollection(pairs.Select(p => new KeyValuePair<string, string?>(p.key, p.value)))
+            .Build();
+
+    private static IReadOnlyDictionary<string, InfoByDate> Commands() =>
+        new Dictionary<string, InfoByDate>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["rm"] = new InfoByDate("[rm#меркури:Меркурий:ретроградного Меркурия:Bad:0],2024-01-01:2024-01-31;"),
+        };
+
+    [Fact]
+    public void Disabled_ByDefault_MatchReturnsNull()
+    {
+        var sut = new ClassifierMatcher(Config(), Commands(), NullLogger<ClassifierMatcher>.Instance);
+        Assert.False(sut.Enabled);
+        Assert.Null(sut.Match("опять этот меркурий всё ломает"));
+    }
+
+    [Fact]
+    public void Enabled_WithoutValidFallback_StaysInactive()
+    {
+        var sut = new ClassifierMatcher(
+            Config(("Classifier:Enabled", "true"), ("Classifier:FallbackCommand", "does-not-exist")),
+            Commands(),
+            NullLogger<ClassifierMatcher>.Instance);
+        Assert.False(sut.Enabled);
+    }
+
+    [Fact]
+    public void Enabled_MercuryMessage_ReturnsFallbackCommand()
+    {
+        var commands = Commands();
+        var sut = new ClassifierMatcher(
+            Config(("Classifier:Enabled", "true"), ("Classifier:FallbackCommand", "rm")),
+            commands,
+            NullLogger<ClassifierMatcher>.Instance);
+
+        Assert.True(sut.Enabled);
+        Assert.Same(commands["rm"], sut.Match("снова планета пятится, письма теряются"));
+    }
+
+    [Fact]
+    public void Enabled_UnrelatedMessage_ReturnsNull()
+    {
+        var sut = new ClassifierMatcher(
+            Config(("Classifier:Enabled", "true"), ("Classifier:FallbackCommand", "rm")),
+            Commands(),
+            NullLogger<ClassifierMatcher>.Instance);
+
+        Assert.Null(sut.Match("во сколько сегодня обед?"));
     }
 }

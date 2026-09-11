@@ -13,6 +13,60 @@ namespace TgInfoBot.Ml
     {
         public static IReadOnlyList<Sample> Seed { get; } = Build();
 
+        /// <summary>
+        /// Loads labeled samples from a TSV file: two tab-separated columns
+        /// <c>label &lt;TAB&gt; text</c>, one per line. Label is <c>1/0</c>, <c>true/false</c>,
+        /// or <c>yes/no</c> (case-insensitive). Blank lines and lines starting with '#' are
+        /// skipped, so the file can carry comments and section headers. This is the intended
+        /// way to grow the training set: keep a big TSV under version control or alongside the
+        /// deployment and point <c>Classifier:DatasetPath</c> at it.
+        /// </summary>
+        public static IReadOnlyList<Sample> LoadTsv(string path)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+            var samples = new List<Sample>();
+            var lineNo = 0;
+            foreach (var raw in File.ReadLines(path))
+            {
+                lineNo++;
+                var line = raw.Trim();
+                if (line.Length == 0 || line[0] == '#')
+                {
+                    continue;
+                }
+
+                var tab = line.IndexOf('\t');
+                if (tab <= 0)
+                {
+                    throw new FormatException($"{path}:{lineNo}: expected 'label<TAB>text'.");
+                }
+
+                var labelText = line[..tab].Trim();
+                var text = line[(tab + 1)..].Trim();
+                if (text.Length == 0)
+                {
+                    throw new FormatException($"{path}:{lineNo}: empty text.");
+                }
+
+                samples.Add(new Sample { Label = ParseLabel(labelText, path, lineNo), Text = text });
+            }
+
+            if (samples.Count == 0)
+            {
+                throw new FormatException($"{path}: no samples found.");
+            }
+
+            return samples;
+        }
+
+        private static bool ParseLabel(string value, string path, int lineNo) => value.ToLowerInvariant() switch
+        {
+            "1" or "true" or "yes" or "y" or "+" => true,
+            "0" or "false" or "no" or "n" or "-" => false,
+            _ => throw new FormatException($"{path}:{lineNo}: invalid label '{value}'. Use 1/0, true/false or yes/no."),
+        };
+
         private static Sample Pos(string text) => new() { Label = true, Text = text };
         private static Sample Neg(string text) => new() { Label = false, Text = text };
 
