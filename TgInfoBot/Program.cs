@@ -116,6 +116,7 @@ builder.Services.AddSingleton<IReadOnlyDictionary<string, InfoByDate>>(sp =>
 
     return new ReadOnlyDictionary<string, InfoByDate>(commands);
 });
+builder.Services.AddSingleton<TgInfoBot.Ml.ClassifierMatcher>();
 builder.Services.AddSingleton<InfoBot>();
 builder.Services.AddHostedService<InfoBotHostedService>();
 

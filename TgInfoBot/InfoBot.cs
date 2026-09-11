@@ -3,6 +3,7 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using TgInfoBot.Ml;
 
 namespace TgInfoBot
 {
@@ -10,13 +11,15 @@ namespace TgInfoBot
     {
         private readonly ITelegramBotClient botClient;
         private readonly IReadOnlyDictionary<string, InfoByDate> Commands;
+        private readonly ClassifierMatcher _classifier;
         private readonly ILogger<InfoBot> _logger;
         public bool Enabled { get; set; }
-        public InfoBot(IConfiguration configuration, IReadOnlyDictionary<string, InfoByDate> commands, ILogger<InfoBot> logger)
+        public InfoBot(IConfiguration configuration, IReadOnlyDictionary<string, InfoByDate> commands, ClassifierMatcher classifier, ILogger<InfoBot> logger)
         {
             var token = configuration.GetValue<string>("TgToken") ?? string.Empty;
             botClient = new TelegramBotClient(token);
             Commands = commands;
+            _classifier = classifier;
             Enabled = configuration.GetValue("TgInfoEnabled", false);
             _logger = logger;
         }
@@ -65,6 +68,13 @@ namespace TgInfoBot
             var isSlashCommand = messageText.StartsWith("/", StringComparison.Ordinal);
             var command = isSlashCommand ? ParseCommandName(messageText) : null;
             var infoer = TryMatchInfoProcessor(messageText);
+
+            // Semantic fallback: if no keyword matched a plain (non-command) message and the
+            // bot is enabled, let the optional classifier decide. Disabled by default.
+            if (infoer is null && command is null && !isSlashCommand && Enabled && _classifier.Enabled)
+            {
+                infoer = _classifier.Match(messageText);
+            }
 
             if (command is null && infoer is null)
             {
