@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -15,7 +14,9 @@ namespace TgInfoBot
         public InfoBot(IConfiguration configuration, IReadOnlyDictionary<string, InfoByDate> commands, ILogger<InfoBot> logger)
         {
             var token = configuration.GetValue<string>("TgToken") ?? string.Empty;
-            botClient = new TelegramBotClient(token);
+            // Optional custom Bot API server (self-hosted telegram-bot-api, or a stub in tests).
+            var apiUrl = configuration.GetValue<string>("TgApiUrl");
+            botClient = new TelegramBotClient(new TelegramBotClientOptions(token, string.IsNullOrWhiteSpace(apiUrl) ? null : apiUrl));
             Commands = commands;
             Enabled = configuration.GetValue("TgInfoEnabled", false);
             _logger = logger;
@@ -27,12 +28,12 @@ namespace TgInfoBot
             // StartReceiving does not block the caller thread. Receiving is done on the ThreadPool.
             var receiverOptions = new ReceiverOptions
             {
-                AllowedUpdates = new[] { UpdateType.Message }  // messages only
+                AllowedUpdates = [UpdateType.Message]  // messages only
             };
             _logger.LogInformation("Telegram bot receiving started");
             await botClient.ReceiveAsync(
                 updateHandler: HandleUpdateAsync,
-                pollingErrorHandler: HandlePollingErrorAsync,
+                errorHandler: HandlePollingErrorAsync,
                 receiverOptions: receiverOptions,
                 cancellationToken: cts.Token
             );
@@ -85,7 +86,7 @@ namespace TgInfoBot
                 if (string.Equals(command, "off", StringComparison.OrdinalIgnoreCase) && Enabled)
                 {
                     Enabled = false;
-                    _ = await client.SendTextMessageAsync(
+                    _ = await client.SendMessage(
                             chatId: chatId,
                             text: "Заткнулся",
                             cancellationToken: t);
@@ -94,7 +95,7 @@ namespace TgInfoBot
                 if (string.Equals(command, "on", StringComparison.OrdinalIgnoreCase) && !Enabled)
                 {
                     Enabled = true;
-                    _ = await client.SendTextMessageAsync(
+                    _ = await client.SendMessage(
                             chatId: chatId,
                             text: "ну ок",
                             cancellationToken: t);
@@ -102,7 +103,7 @@ namespace TgInfoBot
                 }
                 if (string.Equals(command, "status", StringComparison.OrdinalIgnoreCase))
                 {
-                    _ = await client.SendTextMessageAsync(
+                    _ = await client.SendMessage(
                             chatId: chatId,
                             text: $"{(Enabled ? "дада" : "сплю")}",
                             cancellationToken: t);
@@ -127,7 +128,7 @@ namespace TgInfoBot
             var ret = infoer.GetInfoNow();
             if (Enabled)
             {
-                _ = await client.SendTextMessageAsync(
+                _ = await client.SendMessage(
                     chatId: chatId,
                     text: ret,
                     cancellationToken: t);
