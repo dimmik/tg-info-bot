@@ -13,7 +13,7 @@ public sealed class TrainedMercuryClassifierFixture
 
     public TrainedMercuryClassifierFixture()
     {
-        Classifier = new MercuryClassifier(seed: 1);
+        Classifier = new MercuryClassifier();
         Classifier.Train(MercuryDataset.Seed);
     }
 }
@@ -74,7 +74,7 @@ public class MercuryClassifierTests : IClassFixture<TrainedMercuryClassifierFixt
     [Fact]
     public void SaveLoad_RoundTrips_PreservesPrediction()
     {
-        var path = Path.Combine(Path.GetTempPath(), $"mercury-model-{Guid.NewGuid():N}.zip");
+        var path = Path.Combine(Path.GetTempPath(), $"mercury-model-{Guid.NewGuid():N}.txt");
         try
         {
             _sut.Save(path);

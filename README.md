@@ -24,6 +24,7 @@ Never commit a real token to version control.
 | `TgApiUrl` | _(empty)_ | Optional custom Bot API server URL (self-hosted `telegram-bot-api`, or a stub for testing). Empty uses `https://api.telegram.org`. |
 | `LiveDataCommands` | `""` | Comma-separated list of command names that should use live JPL data (e.g. `RM`). Empty disables live fetching. |
 | `Command_<NAME>` | _(none)_ | One or more command definitions (see format below). At least one is required. `<NAME>` should not contain `_`. |
+| `Classifier:*` | `Enabled=false` | Optional semantic fallback for messages no keyword matched (`Enabled`, `Threshold`, `FallbackCommand`, `ModelPath`, `DatasetPath`). Off by default; see `TgInfoBot/Ml/README.md`. |
 | `JplHorizons:*` | see `appsettings*.json` | JPL Horizons request parameters (`BaseUrl`, `MercuryId`, `StepSize`, `Quantities`, `CsvFormat`, `ObjData`). |
 | `MercuryRetrogradeRefresh:*` | see `appsettings*.json` | Background refresh intervals (`RefreshInterval`, `RetryInterval`). |
 
@@ -153,6 +154,7 @@ TgInfoBot/
   InfoByDate.cs                       - Date-range logic and response formatting
   IMessageProcessor.cs                - Accept(string) interface
   JplHorizonsClient.cs                - HTTP client for NASA/JPL Horizons API
+  Ml/                                 - Optional Mercury text classifier (off by default)
   MercuryRetrogradeProvider.cs        - Retrograde period computation from JPL data
   MercuryRetrogradeDateRefreshService.cs - Daily background refresh of JPL data
   appsettings.json                    - Base configuration (no secrets)

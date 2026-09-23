@@ -1,9 +1,15 @@
 # Mercury text classifier (prototype)
 
 A lightweight, in-process text classifier that answers **"is this message about
-(retrograde) Mercury?"**. Built on [ML.NET](https://dotnet.microsoft.com/apps/machinelearning-ai/ml-dotnet)
-(bag-of-words + SDCA logistic regression): CPU-only, tiny model, no external
-services — it runs even on a single-board computer.
+(retrograde) Mercury?"**. Plain C#, no ML framework: binary features (word unigrams,
+word bigrams, char trigrams inside words) + logistic regression trained with
+full-batch gradient descent. No reflection, so it works in the Native AOT image and
+costs essentially nothing: ~0.1 MB of image size, under a second to train on startup,
+no measurable extra memory.
+
+(An earlier prototype used ML.NET; it was replaced because ML.NET generates code at
+runtime and cannot run under Native AOT, and dropping AOT would have tripled the image
+size and memory use.)
 
 It **complements** the keyword matcher (`InfoByDate.Accept`): the matcher cheaply
 catches literal and obfuscated spellings, while the classifier catches messages
@@ -11,15 +17,20 @@ that are *about* Mercury without containing the word.
 
 ## Pieces
 
-- `MercuryClassifier.cs` — train / predict / save / load, plus light per-character
-  normalization (case, Latin→Cyrillic homoglyphs, `ё→е`) that keeps word boundaries.
+- `MercuryClassifier.cs` — featurization, train / predict / save / load, plus light
+  per-character normalization (case, Latin→Cyrillic homoglyphs, `ё→е`) that keeps
+  word boundaries. The saved model is a small text file (`feature<TAB>weight`).
 - `MercuryDataset.cs` — the built-in seed set and a `LoadTsv(path)` reader.
 - `ClassifierMatcher.cs` — optional bot integration, off by default.
 - `data/mercury-samples.tsv` — a starter dataset / labeling template.
 
 ## Enabling it in the bot
 
-Off by default. Turn it on via configuration (env vars or `appsettings.json`):
+**Off by default, and should stay off in real chats for now:** trained on the tiny seed
+set it fires on generic complaints ("у меня всё ломается сегодня", "почему письма не
+доходят") and would spam the chat. Enable only for experiments, or once the dataset
+is large enough (see below). Configuration (env vars or `appsettings.json`;
+env var form: `Classifier__Enabled=true`):
 
 ```json
 "Classifier": {
@@ -34,7 +45,7 @@ Off by default. Turn it on via configuration (env vars or `appsettings.json`):
 - `FallbackCommand` — the name of a configured `Command_*` whose info is sent when the
   classifier fires on a message no keyword matched. **Required** for the classifier to act.
 - `Threshold` — raise it (e.g. `0.7`) for fewer false positives, lower it for more recall.
-- Training source priority: `ModelPath` (a saved `.zip`) → `DatasetPath` (a TSV) → built-in seed.
+- Training source priority: `ModelPath` (a saved model file) → `DatasetPath` (a TSV) → built-in seed.
 
 ## Growing the dataset
 
@@ -59,4 +70,4 @@ Labeling tips:
 - Prefer real messages from your chats over synthetic ones.
 
 After growing the TSV, just restart the bot — it retrains on startup. To avoid retraining
-every start, train once and save a `.zip`, then set `ModelPath`.
+every start, train once with `MercuryClassifier.Save(path)`, then set `ModelPath`.

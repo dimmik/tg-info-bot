@@ -11,7 +11,7 @@ namespace TgInfoBot.Ml
     ///   Enabled          - bool, default false
     ///   Threshold        - float in [0,1], default 0.5
     ///   FallbackCommand  - name of a configured Command_* whose info to send on a hit
-    ///   ModelPath        - optional path to a saved .zip model; takes priority when present
+    ///   ModelPath        - optional path to a saved model file; takes priority when present
     ///   DatasetPath      - optional path to a TSV training set; used when no ModelPath
     ///                      (falls back to the built-in seed dataset if neither is set)
     /// </summary>
