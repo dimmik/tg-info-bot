@@ -122,10 +122,12 @@ runs as a non-root user), about 45 MB in total. The build stage cross-compiles f
 
 ## CI/CD
 
-- `.github/workflows/tests.yml` runs restore/build/tests on push to `master` and on every pull request.
-- `.github/workflows/docker-publish.yml` builds and publishes a multi-platform image (`linux/amd64`, `linux/arm64`) to `ghcr.io/<owner>/<repo>` on push to `master`.
-- Docker tags include `latest` (default branch), a UTC build timestamp
-  (`YYYYMMDD-HHmmss`), `sha-*`, and branch-based tags.
+- `.github/workflows/tests.yml` runs restore/build/tests on push to `master`, `beta`, `beta/**` and on every pull request.
+- `.github/workflows/docker-publish.yml` builds and publishes a multi-platform image (`linux/amd64`, `linux/arm64`) to `ghcr.io/<owner>/<repo>` on push to `master`, `beta` or `beta/**`.
+- Docker tags:
+  - `master`: `latest` and a UTC build timestamp (`YYYYMMDD-HHmmss`);
+  - `beta`, `beta/*`: `beta-latest` and `beta-YYYYMMDD-HHmmss`;
+  - always: `sha-*` and the branch name (`/` replaced with `-`).
 - The image carries `io.containers.autoupdate=registry`, so `podman auto-update`
   can track it. The container must still be run from the fully-qualified reference
   `ghcr.io/<owner>/<repo>:latest` inside a systemd unit for auto-update to pick it up.
