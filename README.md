@@ -21,7 +21,7 @@ Never commit a real token to version control.
 |-----|---------|-------------|
 | `TgToken` | _(required)_ | Telegram bot token. Must be set via User Secrets or environment variable. |
 | `TgInfoEnabled` | `false` | Whether the bot sends replies on startup. Can be toggled at runtime. |
-| `TgBotSecretCode` | `adk` | Secret path segment for the HTTP enable/disable endpoint. |
+| `TgApiUrl` | _(empty)_ | Optional custom Bot API server URL (self-hosted `telegram-bot-api`, or a stub for testing). Empty uses `https://api.telegram.org`. |
 | `LiveDataCommands` | `""` | Comma-separated list of command names that should use live JPL data (e.g. `RM`). Empty disables live fetching. |
 | `Command_<NAME>` | _(none)_ | One or more command definitions (see format below). At least one is required. `<NAME>` should not contain `_`. |
 | `JplHorizons:*` | see `appsettings*.json` | JPL Horizons request parameters (`BaseUrl`, `MercuryId`, `StepSize`, `Quantities`, `CsvFormat`, `ObjData`). |
@@ -68,7 +68,6 @@ Example:
 ```json
 {
   "TgInfoEnabled": true,
-  "TgBotSecretCode": "change-me",
   "LiveDataCommands": "RM",
   "Command_RM": "[rm#меркур#ретрогр:Ретроградный Меркурий:Ретроградного Меркурия:Bad:3],2022-08-01:2022-08-15;2022-09-10:2022-10-02;2022-12-29:2023-01-18;2023-04-21:2023-05-15;2023-08-23:2023-09-15;2023-12-13:2024-01-02;2024-04-01:2024-04-25;2024-08-05:2024-08-28;2024-11-26:2024-12-15;2025-03-14:2025-04-07;2025-07-17:2025-08-11;2025-11-10:2025-11-29;2026-02-25:2026-03-20;2026-06-29:2026-07-23;2026-11-13:2026-11-24;2027-02-09:2027-03-03;2027-06-10:2027-07-04;2027-10-07:2027-10-28;",
   "TgToken": "xxx",
@@ -108,8 +107,6 @@ dotnet user-secrets set "TgToken" "your-token-here"
 dotnet run
 ```
 
-The Swagger UI is available at `http://localhost:<port>/swagger` in Development mode.
-
 ## Running with Docker
 
 ```
@@ -117,6 +114,11 @@ cd TgInfoBot
 docker build -t tg-info-bot .
 docker run -e TgToken=your-token-here -e TgInfoEnabled=true -e LiveDataCommands=RM tg-info-bot
 ```
+
+The image is a Native AOT build: a single native binary on top of
+`mcr.microsoft.com/dotnet/runtime-deps:10.0-noble-chiseled` (no .NET runtime, no shell,
+runs as a non-root user), about 45 MB in total. The build stage cross-compiles for
+`arm64` natively, without QEMU emulation.
 
 ## CI/CD
 
@@ -127,15 +129,6 @@ docker run -e TgToken=your-token-here -e TgInfoEnabled=true -e LiveDataCommands=
 - The image carries `io.containers.autoupdate=registry`, so `podman auto-update`
   can track it. The container must still be run from the fully-qualified reference
   `ghcr.io/<owner>/<repo>:latest` inside a systemd unit for auto-update to pick it up.
-
-## HTTP management endpoint
-
-```
-GET /config/{TgBotSecretCode}/enable
-```
-
-Toggles `TgInfoEnabled` at runtime and returns the new state. Change `TgBotSecretCode`
-from its default value before deploying.
 
 ## Bot commands
 
@@ -162,5 +155,5 @@ TgInfoBot/
   MercuryRetrogradeDateRefreshService.cs - Daily background refresh of JPL data
   appsettings.json                    - Base configuration (no secrets)
   appsettings.Development.json        - Development overrides (no real token)
-  Dockerfile                          - Multi-stage Docker build (.NET 10)
+  Dockerfile                          - Multi-stage Native AOT build (.NET 10, chiseled runtime-deps)
 ```
