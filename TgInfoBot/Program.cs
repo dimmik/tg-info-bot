@@ -1,22 +1,7 @@
-using System.Collections;
 using System.Collections.ObjectModel;
 using TgInfoBot;
 
-
-//IDictionary variables = Environment.GetEnvironmentVariables();
-
-//foreach (DictionaryEntry entry in variables)
-//{
-//    Console.WriteLine($"{entry.Key} = {entry.Value}");
-//}
-
-var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddEnvironmentVariables();
-
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var builder = Host.CreateApplicationBuilder(args);
 
 var conf = builder.Configuration;
 var tgToken = conf.GetValue<string>("TgToken") ?? string.Empty;
@@ -28,7 +13,6 @@ if (string.IsNullOrWhiteSpace(tgToken) || string.Equals(tgToken, "wrong", String
 var commandEntries = conf.AsEnumerable()
     .Where(kv =>
     {
-        //Console.WriteLine($"config: {kv.Key} = {kv.Value}");
         if (!kv.Key.StartsWith("Command_", StringComparison.OrdinalIgnoreCase))
         {
             return false;
@@ -42,7 +26,6 @@ var commandEntries = conf.AsEnumerable()
         var suffix = kv.Key.Length > "Command_".Length
             ? kv.Key.Substring("Command_".Length)
             : string.Empty;
-        //Console.WriteLine($"suffix: {suffix}");
 
         if (suffix.Contains("_", StringComparison.Ordinal))
         {
@@ -83,8 +66,6 @@ foreach (var entry in commandEntries)
     }
 }
 
-string seccode = conf.GetValue<string>("TgBotSecretCode") ?? "adk";
-
 // Configure JPL Horizons API options
 var jplOptions = new JplHorizonsOptions();
 conf.GetSection("JplHorizons").Bind(jplOptions);
@@ -120,46 +101,4 @@ builder.Services.AddSingleton<TgInfoBot.Ml.ClassifierMatcher>();
 builder.Services.AddSingleton<InfoBot>();
 builder.Services.AddHostedService<InfoBotHostedService>();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet($"/config/{seccode}/enable", (InfoBot tgBot) =>
-{
-    tgBot.Enabled = !tgBot.Enabled;
-    return $"tgBotEnabled: {tgBot.Enabled}";
-});
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-internal record WeatherForecast(DateTime Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+builder.Build().Run();

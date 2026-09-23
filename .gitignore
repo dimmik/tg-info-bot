@@ -4,3 +4,8 @@ packages/
 **/*.user
 **/bin/*
 **/obj/*
+
+# SSH keys - never commit
+*.ppk
+*.pem
+id_*

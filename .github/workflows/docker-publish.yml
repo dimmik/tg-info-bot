@@ -1,18 +1,22 @@
 name: Docker Publish
 
+# Per-branch group: a beta push must not cancel an in-flight master build.
 concurrency:
-  group: tg-info-bot-docker
+  group: tg-info-bot-docker-${{ github.ref }}
   cancel-in-progress: true
 
 on:
   push:
     branches:
       - master
+      - beta
+      - 'beta/**'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  IS_BETA: ${{ github.ref == 'refs/heads/beta' || startsWith(github.ref, 'refs/heads/beta/') }}
 
 jobs:
   build-and-push-image:
@@ -43,8 +47,12 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # master -> latest + <timestamp>; beta, beta/* -> beta-latest + beta-<timestamp>.
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value={{date 'YYYYMMDD-HHmmss' tz='UTC'}},enable={{is_default_branch}}
+            type=raw,value=beta-latest,enable=${{ env.IS_BETA }}
+            type=raw,value=beta-{{date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=${{ env.IS_BETA }}
             type=sha,prefix=sha-
             type=ref,event=branch
 
