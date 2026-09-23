@@ -25,6 +25,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Ship the classifier training set so a relative Classifier:DatasetPath resolves at runtime. -->
+    <Content Include="Ml\data\mercury-samples.tsv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>TgInfoBot.Tests</_Parameter1>
     </AssemblyAttribute>
